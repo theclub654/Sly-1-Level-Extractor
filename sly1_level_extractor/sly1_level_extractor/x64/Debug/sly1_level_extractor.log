@@ -1,3 +1,0 @@
-﻿  main.cpp
-C:\Users\denar\source\repos\sly1_level_extractor\sly1_level_extractor\main.cpp(48,22): warning C4244: 'initializing': conversion from 'std::streamoff' to 'long', possible loss of data
-  sly1_level_extractor.vcxproj -> C:\Users\denar\source\repos\sly1_level_extractor\x64\Debug\sly1_level_extractor.exe
