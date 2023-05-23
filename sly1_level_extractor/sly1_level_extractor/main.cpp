@@ -84,7 +84,6 @@ int main(int argc, char** argv)
 
 void decompress(unsigned char* input_data, uint32_t size, std::string levelname)
 {
-	//std::cout << std::hex << size;
 	static char* output_data = new char[0x4000];
 	static uint32_t actual_output_data_size = 10 * size;
 	static char* actual_output_data = new char[actual_output_data_size];
