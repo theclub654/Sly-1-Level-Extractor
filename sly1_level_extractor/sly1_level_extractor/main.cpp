@@ -3,22 +3,23 @@
 #include <string>
 #include <Windows.h>
 
+void decompress(unsigned char* input_data, uint32_t size, std::string levelname);
+
 int main(int argc, char** argv)
 {
 	const char* filename = argv[1];
 
 	if(filename == 0x0)
 	{
-		std::cout << "Drag Sly 1 Retail ISO file to program to extract level files\n";
+		std::cout << "Drag Sly 1 Retail ISO file to program to extract level files NTSC Supported Only\n";
 		return -1;
 	}
 
 	else
 	{
 		std::ifstream ISO(filename, std::ios::binary);
-		std::streampos size;
-		std::string name;
 		static unsigned char* fileBuf;
+		std::string name;
 		uint32_t regionName;
 		ISO.seekg(0x828BD, std::ios::beg);
 		ISO.read(reinterpret_cast<char*>(&regionName), sizeof(uint32_t));
@@ -38,16 +39,17 @@ int main(int argc, char** argv)
 			{
 				ISO.seekg(0x8, SEEK_CUR);
 				std::string name = levelNames[i];
-				std::ofstream output(name, std::ios::binary | std::ios::out);
 				std::cout << "Extracting " << name << "\n";
-				uint32_t temp0;
-				uint32_t temp1;
-				uint32_t temp2;
-				uint32_t temp3;
-				uint32_t temp4;
-				uint32_t temp5;
-				uint32_t temp6;
-				uint32_t temp7;
+
+				uint32_t temp0; // sector offset
+				uint32_t temp1; // file size
+				uint32_t temp2; // search value
+				uint32_t temp3; // for lsn
+				uint32_t temp4; // search cipher
+				uint32_t temp5; // for size
+				uint32_t temp6; // level ID
+				uint32_t temp7; // Level Name
+
 				ISO.read(reinterpret_cast<char*> (&temp0), sizeof(uint32_t));
 				ISO.read(reinterpret_cast<char*> (&temp1), sizeof(uint32_t));
 				ISO.read(reinterpret_cast<char*> (&temp2), sizeof(uint32_t));
@@ -64,8 +66,7 @@ int main(int argc, char** argv)
 				long nextFileTable = ISO.tellg();
 				ISO.seekg(sectorOffset, SEEK_SET);
 				ISO.read((char*)fileBuf, size);
-				output.write((char*)fileBuf, size);
-				output.close();
+				decompress(fileBuf, size, name);
 				ISO.seekg(nextFileTable, SEEK_SET);
 			}
 		}
@@ -79,4 +80,74 @@ int main(int argc, char** argv)
 		ISO.close();
 	}
 	return 0;
+}
+
+void decompress(unsigned char* input_data, uint32_t size, std::string levelname)
+{
+	//std::cout << std::hex << size;
+	static char* output_data = new char[0x4000];
+	static uint32_t actual_output_data_size = 10 * size;
+	static char* actual_output_data = new char[actual_output_data_size];
+
+	static uint64_t input_size = size;
+	static uint64_t input_base = 0;
+	static uint64_t output_base = 0;
+	static uint64_t output_read = 0;
+
+	static uint64_t input_pos = 0;
+	static uint64_t output_pos = 0;
+
+	static unsigned char bits = 0;
+	static unsigned short src = 0;
+	static short ssize = 0;
+	static short offset = 0;
+	static int i = 0;
+	static unsigned long k = 0;
+
+	while (input_pos < input_size) {
+		bits = input_data[input_pos++];
+		if (input_pos >= input_size)
+			break;
+
+		for (i = 0; i < 8; i++)
+		{
+			src = input_data[input_pos++];
+			if (input_pos >= input_size)
+				break;
+
+			if (bits & 1) {
+				output_data[output_pos++] = src;
+				if (output_pos >= 0x2000)
+				{
+					output_pos &= 0x1fff;
+					memcpy(actual_output_data + (k++ * 0x2000), output_data, 0x2000);
+				}
+			}
+			else {
+				src |= ((unsigned short)(input_data[input_pos++]) << 8);
+				ssize = (src >> 13) + 2;
+				offset = src & 0x1FFF;
+				while (ssize >= 0) {
+					--ssize;
+					output_data[output_pos++] = output_data[offset];
+					if (output_pos >= 0x2000)
+					{
+						output_pos &= 0x1fff;
+						memcpy(actual_output_data + (k++ * 0x2000), output_data, 0x2000);
+					}
+					offset = (offset + 1) & 0x1FFF;
+				}
+			}
+			bits >>= 1;
+		}
+	}
+
+	if (output_pos >= 0)
+		memcpy(actual_output_data + (k++ * 0x2000), output_data, output_pos);
+
+	size_t gggg = k * 0x2000 + output_pos;
+
+	std::ofstream output(levelname, std::ios::binary | std::ios::out);
+	output.write(actual_output_data, gggg);
+	output.close();
 }
