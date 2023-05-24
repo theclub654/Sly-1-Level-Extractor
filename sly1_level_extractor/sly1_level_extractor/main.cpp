@@ -3,13 +3,14 @@
 #include <string>
 #include <Windows.h>
 
-char* decompress(unsigned char* input_data, uint32_t size, std::string levelname);
+char* decompress(char* input_data, long size);
 
 uint64_t sizeDecompressOutput = 0;
 
 int main(int argc, char** argv)
 {
-	const char* filename = argv[1];
+	//const char* filename = argv[1];
+	const char* filename = "Sly Cooper and the Thievius Raccoonus (USA).iso";
 
 	if(filename == 0x0)
 	{
@@ -20,7 +21,7 @@ int main(int argc, char** argv)
 	else
 	{
 		std::ifstream ISO(filename, std::ios::binary);
-		static char* fileBuf;
+		char* fileBuf;
 		std::string name;
 		uint32_t regionName;
 		ISO.seekg(0x828BD, std::ios::beg);
@@ -61,17 +62,17 @@ int main(int argc, char** argv)
 				ISO.read(reinterpret_cast<char*> (&temp6), sizeof(uint32_t));
 				ISO.read(reinterpret_cast<char*> (&temp7), sizeof(uint32_t));
 
-				uint32_t size = temp1 ^ temp7;
+				long size = temp1 ^ temp7;
 				long sectorOffset = temp0 ^ temp5;
 				sectorOffset = sectorOffset * 0x800;
 				fileBuf = new char[size];
 				ISO.seekg(0x4, SEEK_CUR);
 				long nextFileTable = ISO.tellg();
 				ISO.seekg(sectorOffset, SEEK_SET);
-				ISO.read((char*)fileBuf, size);
-				fileBuf = decompress((unsigned char*)fileBuf, size, name);
+				ISO.read(fileBuf, size);
+				//fileBuf = decompress(fileBuf, size); // For later
 				std::ofstream output(levelNames[i], std::ios::binary | std::ios::out);
-				output.write(fileBuf, sizeDecompressOutput);
+				output.write(fileBuf, size);
 				output.close();
 				ISO.seekg(nextFileTable, SEEK_SET);
 			}
@@ -88,10 +89,10 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-char* decompress(unsigned char* input_data, uint32_t size, std::string levelname)
+char* decompress(char* input_data, long size)
 {
 	static char* output_data = new char[0x4000];
-	static uint32_t actual_output_data_size = 10 * size;
+	static uint64_t actual_output_data_size = 10 * size;
 	static char* actual_output_data = new char[actual_output_data_size];
 
 	static uint64_t input_size = size;
