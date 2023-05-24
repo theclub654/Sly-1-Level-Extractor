@@ -3,7 +3,9 @@
 #include <string>
 #include <Windows.h>
 
-void decompress(unsigned char* input_data, uint32_t size, std::string levelname);
+char* decompress(unsigned char* input_data, uint32_t size, std::string levelname);
+
+uint64_t sizeDecompressOutput = 0;
 
 int main(int argc, char** argv)
 {
@@ -18,7 +20,7 @@ int main(int argc, char** argv)
 	else
 	{
 		std::ifstream ISO(filename, std::ios::binary);
-		static unsigned char* fileBuf;
+		static char* fileBuf;
 		std::string name;
 		uint32_t regionName;
 		ISO.seekg(0x828BD, std::ios::beg);
@@ -58,15 +60,19 @@ int main(int argc, char** argv)
 				ISO.read(reinterpret_cast<char*> (&temp5), sizeof(uint32_t));
 				ISO.read(reinterpret_cast<char*> (&temp6), sizeof(uint32_t));
 				ISO.read(reinterpret_cast<char*> (&temp7), sizeof(uint32_t));
+
 				uint32_t size = temp1 ^ temp7;
 				long sectorOffset = temp0 ^ temp5;
 				sectorOffset = sectorOffset * 0x800;
-				fileBuf = new unsigned char[size];
+				fileBuf = new char[size];
 				ISO.seekg(0x4, SEEK_CUR);
 				long nextFileTable = ISO.tellg();
 				ISO.seekg(sectorOffset, SEEK_SET);
 				ISO.read((char*)fileBuf, size);
-				decompress(fileBuf, size, name);
+				fileBuf = decompress((unsigned char*)fileBuf, size, name);
+				std::ofstream output(levelNames[i], std::ios::binary | std::ios::out);
+				output.write(fileBuf, sizeDecompressOutput);
+				output.close();
 				ISO.seekg(nextFileTable, SEEK_SET);
 			}
 		}
@@ -82,7 +88,7 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-void decompress(unsigned char* input_data, uint32_t size, std::string levelname)
+char* decompress(unsigned char* input_data, uint32_t size, std::string levelname)
 {
 	static char* output_data = new char[0x4000];
 	static uint32_t actual_output_data_size = 10 * size;
@@ -146,7 +152,6 @@ void decompress(unsigned char* input_data, uint32_t size, std::string levelname)
 
 	size_t gggg = k * 0x2000 + output_pos;
 
-	std::ofstream output(levelname, std::ios::binary | std::ios::out);
-	output.write(actual_output_data, gggg);
-	output.close();
+	sizeDecompressOutput = gggg;
+	return actual_output_data;
 }
