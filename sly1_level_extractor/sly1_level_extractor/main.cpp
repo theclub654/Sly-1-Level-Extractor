@@ -26,12 +26,12 @@ int main(int argc, char** argv)
 		uint32_t regionName;
 		ISO.seekg(0x828BD, std::ios::beg);
 		ISO.read(reinterpret_cast<char*>(&regionName), sizeof(uint32_t));
-		std::string levelNames[45] = { "Paris", "The Hideout", "A Stealthy Approach", "Prowling the Grounds" ,"High Class Heist", "Into the Machine", "A Cunning Disguise"
-		, "The Fire Down Below", "Treasure in the Depths", "The Gunboat Graveyard", "The Eye of the Storm", "A Rocky Start", "Muggshot's Turf", "Boneyard Casino", "Murray's Big Gamble"
-		, "At the Dog Track", "Two to Tango", "Straight to the Top", "Back Alley Heist", "Last Call", "The Dread Swamp Path", "The Swamp's Dark Center", "The Lair of the Beast"
-		, "A Grave Undertaking", "Piranha Lake", "Descent into Danger", "A Ghastly Voyage", "Down Home Cooking", "A Deadly Dance", "A Perilous Ascent", "Inside the Stronghold"
-		, "Flaming Temple of Flame", "The Unseen Foe", "The King of the Hill", "Rapid Fire Assault", "Duel by the Dragon", "A Desperate Race", "Flame Fu!", "A Hazardous Path"
-		, "Burning Rubber", "A Daring Rescue", "Bentley Comes Through", "A Temporary Truce", "Sinking Peril", "A Strange Reunion" };
+		std::string levelNames[45] = { "Paris.brx", "The Hideout.brx", "A Stealthy Approach.brx", "Prowling the Grounds.brx" ,"High Class Heist.brx", "Into the Machine.brx", "A Cunning Disguise.brx"
+		, "The Fire Down Below.brx", "Treasure in the Depths.brx", "The Gunboat Graveyard.brx", "The Eye of the Storm.brx", "A Rocky Start.brx", "Muggshot's Turf.brx", "Boneyard Casino.brx", "Murray's Big Gamble.brx"
+		, "At the Dog Track.brx", "Two to Tango.brx", "Straight to the Top.brx", "Back Alley Heist.brx", "Last Call.brx", "The Dread Swamp Path.brx", "The Swamp's Dark Center.brx", "The Lair of the Beast.brx"
+		, "A Grave Undertaking.brx", "Piranha Lake.brx", "Descent into Danger.brx", "A Ghastly Voyage.brx", "Down Home Cooking.brx", "A Deadly Dance.brx", "A Perilous Ascent.brx", "Inside the Stronghold.brx"
+		, "Flaming Temple of Flame.brx", "The Unseen Foe.brx", "The King of the Hill.brx", "Rapid Fire Assault.brx", "Duel by the Dragon.brx", "A Desperate Race.brx", "Flame Fu!.brx", "A Hazardous Path.brx"
+		, "Burning Rubber.brx", "A Daring Rescue.brx", "Bentley Comes Through.brx", "A Temporary Truce.brx", "Sinking Peril.brx", "A Strange Reunion.brx" };
 
 		//NTSC
 		if (regionName == 1398096723)
